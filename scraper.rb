@@ -109,8 +109,8 @@ while date <= to_date
   uri1.path = uri1.path.split('/')[0...-3].join("/") << "/#{date.year}/#{date.month}/#{date.day}"
   uri2.path = uri2.path.split('/')[0...-3].join("/") << "/#{date.year}/#{date.month}/#{date.day}"
   
-  date = date + 1
   puts(date)
+  date = date + 1
   
   xml_doc.tmx.body.add_child("<tu><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
 end
