@@ -103,16 +103,16 @@ end
 
 
 while date <= to_date
-  page1 = Nokogiri::HTML(open(uri1.to_s).read, nil, 'UTF-8')
-  page2 = Nokogiri::HTML(open(uri2.to_s).read, nil, 'UTF-8')
-  
   uri1.path = uri1.path.split('/')[0...-3].join("/") << "/#{date.year}/#{date.month}/#{date.day}"
   uri2.path = uri2.path.split('/')[0...-3].join("/") << "/#{date.year}/#{date.month}/#{date.day}"
   
+  page1 = Nokogiri::HTML(open(uri1.to_s).read, nil, 'UTF-8')
+  page2 = Nokogiri::HTML(open(uri2.to_s).read, nil, 'UTF-8')
+    
   puts(date)
   date = date + 1
   
-  xml_doc.tmx.body.add_child("<tu><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
+  xml_doc.tmx.body.add_child("<tu> <note>#{options[:l1]}:#{uri1.to_s}, #{options[:l2]}:#{uri2.to_s}</note><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
 end
 
 write_xml(xml_doc, options)
