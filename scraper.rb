@@ -19,6 +19,7 @@ XSL
   xslt = Nokogiri::XSLT(xsl)
   out  = xslt.transform(xml)
   out.create_internal_subset('tmx', nil, "tmx14.dtd")
+  
   open(options[:out] || "out.txt", "w:UTF-8") do |f|
     f.puts(out.to_xml(:indent => 5))
   end
@@ -45,6 +46,7 @@ Signal.trap("TERM") {
   exit
 }
 
+options[:add] = false
 
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: scraper.rb [options] lang1 lang2"
@@ -66,6 +68,10 @@ optparse = OptionParser.new do |opts|
     if options[:start].nil?
       options[:start] = Date.today
     end
+  end
+  
+  opts.on("-a", "--add", "Set this flag if you want to add to an existing file (passed as OUTPUT)") do |a|
+    options[:add] = a
   end
 end
 
@@ -102,22 +108,66 @@ if date >= to_date
   exit
 end
 
+urls = []
+weeks = []
 
+if options[:add]
+  add_file = Nokogiri::XML(open(options[:out]), nil, "UTF-8")
+  if add_file.nil?
+    puts "File #{options[:out]} does not exist or is not valid XML."
+    exit
+  end
+  
+  notes = add_file.xpath("//note")
+  notes.each do |n|
+    r = /(.*)=(.*), (.*)=(.*)/.match(n.text)
+    url = r[2]
+    urls << r[2]
+    urls << r[4]
+    
+    r2 = /Week ([\d]*)/.match(n.text)
+    if !r2.nil?
+      weeks << "#{r2[1]}+#{r[4].split('/')[-3]}"
+    end
+  end
+  
+  xml_doc = Nokogiri::Slop(add_file.to_xml)
+end
+ 
 while date <= to_date
   uri1.path = uri1.path.split('/')[0...-3].join("/") << "/#{date.year}/#{date.month}/#{date.day}"
   uri2.path = uri2.path.split('/')[0...-3].join("/") << "/#{date.year}/#{date.month}/#{date.day}"
   
+  if options[:add]
+    if urls.include?(uri1.to_s) || urls.include?(uri2.to_s)
+      puts("#{date} skipped (was already in file)")
+      date = date + 1
+      next
+    end
+  end
+  
   page1 = Nokogiri::HTML(open(uri1.to_s).read, nil, 'UTF-8')
   page2 = Nokogiri::HTML(open(uri2.to_s).read, nil, 'UTF-8')
   
-  puts(date)
-  date = date + 1
+  add_week = true
+  if options[:add] && weeks.include?("#{date.strftime("%U").to_i}+#{date.year}") && current_week != date.strftime("%U").to_i
+    puts("Week #{date.strftime("%U").to_i}+#{date.year} skipped (was already in file).")
+    add_week = false
+    current_week = date.strftime("%U").to_i
+  end
   
-  xml_doc.tmx.body.add_child("<tu> <note>#{options[:l1]}=#{uri1.to_s}, #{options[:l2]}=#{uri2.to_s}</note><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
-  if current_week != date.strftime("%U").to_i
+  
+  if !page1.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip.nil?
+    xml_doc.tmx.body.add_child("<tu> <note>#{options[:l1]}=#{uri1.to_s}, #{options[:l2]}=#{uri2.to_s}</note><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
+  end
+  
+  if current_week != date.strftime("%U").to_i && !page1.xpath('//*[@class="groupMtgSched"]').xpath('.//text()').text.strip.nil? && add_week
     xml_doc.tmx.body.add_child("<tu> <note>(Week #{date.strftime("%U").to_i}) #{options[:l1]}=#{uri1.to_s}, #{options[:l2]}=#{uri2.to_s}</note><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="groupMtgSched"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="groupMtgSched"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
     current_week = date.strftime("%U").to_i
   end
+  
+  puts(date)
+  date = date + 1
 end
 
 write_xml(xml_doc, options)
