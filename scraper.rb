@@ -113,9 +113,9 @@ while date <= to_date
   puts(date)
   date = date + 1
   
-  xml_doc.tmx.body.add_child("<tu> <note>#{options[:l1]}:#{uri1.to_s}, #{options[:l2]}:#{uri2.to_s}</note><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
+  xml_doc.tmx.body.add_child("<tu> <note>#{options[:l1]}=#{uri1.to_s}, #{options[:l2]}=#{uri2.to_s}</note><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="bodyTxt"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
   if current_week != date.strftime("%U").to_i
-    xml_doc.tmx.body.add_child("<tu> <note>(Week #{date.strftime("%U").to_i}) #{options[:l1]}:#{uri1.to_s}, #{options[:l2]}:#{uri2.to_s}</note><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="groupMtgSched"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="groupMtgSched"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
+    xml_doc.tmx.body.add_child("<tu> <note>(Week #{date.strftime("%U").to_i}) #{options[:l1]}=#{uri1.to_s}, #{options[:l2]}=#{uri2.to_s}</note><tuv xml:lang=\"#{options[:l1]}\"><seg>#{page1.xpath('//*[@class="groupMtgSched"]').xpath('.//text()').text.strip}</seg></tuv><tuv xml:lang=\"#{options[:l2]}\"><seg>#{page2.xpath('//*[@class="groupMtgSched"]').xpath('.//text()').text.strip}</seg></tuv></tu>")
     current_week = date.strftime("%U").to_i
   end
 end
