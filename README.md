@@ -1,10 +1,7 @@
 1. Run `bundle install`
 2. Run `bundle exec ruby scraper.rb` with the following arguments
 
-         Usage: scraper.rb [options]
-            --url1=URL1                  The URL for the 1st language. (Mandatory)
-            --url2=URL2                  The URL for the 2nd language. (Mandatory)
-            --lang1=LANG1                The language code for the 1st language. (Mandatory)
-            --lang2=LANG2                The language code for the 2nd language. (Mandatory)
-            -o, --out=OUTPUT             The out file name. (Mandatory)
-            -e, --end=END_DATE           The end date, format YYYY-MM-DD. (Mandatory)
+         Usage: scraper.rb [options] lang1 lang2
+           -o, --out=OUTPUT                 The out file name. (Mandatory)
+           --date=DATE                      The date range, format YYYY-MM-DD:YYYY-MM-DD. (Mandatory)
+           -a, --add                        Set this flag if you want to add to an existing file (passed as OUTPUT)
